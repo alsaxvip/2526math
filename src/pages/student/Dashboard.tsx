@@ -520,7 +520,7 @@ const StudentDashboard = () => {
             {/* EXP Progress Bar */}
             <div className="mt-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-white font-medium">Progress ke Level Selanjutnya</span>
+                <span className="text-white font-medium">Progress Level</span>
                 <span className="text-yellow-400 font-bold">{rpgStats.exp}/{rpgStats.expToNext} XP</span>
               </div>
               <div className="bg-slate-700 rounded-full h-4 overflow-hidden">
