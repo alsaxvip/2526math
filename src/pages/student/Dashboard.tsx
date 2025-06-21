@@ -444,13 +444,13 @@ const StudentDashboard = () => {
                       {characterClass.name}
                     </span>
                     <span className="text-purple-300">
-                      Ranking #{stats.rank > 0 ? stats.rank : '?'} di Kerajaan
+                      Ranking #{stats.rank > 0 ? stats.rank : '?'} di Math Castle
                     </span>
                   </div>
                   <p className="text-purple-200">
                     {stats.points > 500 ? "Legend banget! Quest master sejati 🏆" : 
                      stats.points > 200 ? "Keren nih, adventurer yang promising! ⚡" :
-                     "Pemula yang semangat, gas terus! 🌟"}
+                     "Newbie yang semangat, gas terus! 🌟"}
                   </p>
                 </div>
               </div>
