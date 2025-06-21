@@ -1,0 +1,925 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/loading';
+import { AnimatedContainer, fadeInUp, slideInFromLeft } from '@/components/ui/motion';
+import { 
+  UserCheck, Calendar, ChevronLeft, ChevronRight, 
+  Download, RefreshCw, Users, CheckCircle, 
+  XCircle, AlertTriangle, Heart, BarChart3, Plus,
+  Search, Filter, Eye, Edit, Trash2, Save, X
+} from 'lucide-react';
+import { classApi, studentApi, attendanceApi } from '../../lib/api';
+import * as XLSX from 'xlsx';
+
+// Enhanced interfaces
+interface Class {
+  id: string;
+  name: string;
+  description: string;
+  studentCount?: number;
+}
+
+interface Student {
+  id: string;
+  username: string;
+  fullName: string;
+  classId: string;
+}
+
+interface AttendanceRecord {
+  id: string;
+  classId: string;
+  date: string;
+  studentUsername: string;
+  status: string;
+  notes: string;
+}
+
+type AttendanceStatus = 'present' | 'sick' | 'permission' | 'absent';
+
+interface AttendanceStatusMap {
+  [studentUsername: string]: AttendanceStatus;
+}
+
+// Status configuration
+const statusConfig = {
+  present: { label: 'Hadir', color: 'bg-green-500', textColor: 'text-green-700', bgColor: 'bg-green-100' },
+  sick: { label: 'Sakit', color: 'bg-blue-500', textColor: 'text-blue-700', bgColor: 'bg-blue-100' },
+  permission: { label: 'Izin', color: 'bg-yellow-500', textColor: 'text-yellow-700', bgColor: 'bg-yellow-100' },
+  absent: { label: 'Alfa', color: 'bg-red-500', textColor: 'text-red-700', bgColor: 'bg-red-100' }
+};
+
+// Enhanced Loading Skeleton
+const LoadingSkeleton = () => (
+  <div className="animate-pulse space-y-4">
+    {[...Array(5)].map((_, i) => (
+      <div key={i} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
+        <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+        </div>
+        <div className="flex space-x-2">
+          {[...Array(4)].map((_, j) => (
+            <div key={j} className="w-16 h-8 bg-gray-300 rounded-lg"></div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const PresensiPage = () => {
+  // Enhanced state management
+  const [activeTab, setActiveTab] = useState<'daily' | 'records'>('daily');
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedClass, setSelectedClass] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [attendanceData, setAttendanceData] = useState<AttendanceStatusMap>({});
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  
+  // Loading states
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Modal states
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  // Notification state  
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
+  // Statistics
+  const [stats, setStats] = useState({
+    totalPresent: 0,
+    totalSick: 0,
+    totalPermission: 0,
+    totalAbsent: 0
+  });
+
+  // Notification helper
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 5000);
+  };
+
+  // Date formatting
+  const formatDateForAPI = (date: Date) => date.toISOString().split('T')[0];
+  
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('id-ID', { 
+      weekday: 'long',
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'
+    });
+  };
+
+  // Enhanced data fetching
+  const fetchInitialData = async () => {
+    try {
+      setIsLoading(true);
+      await Promise.all([fetchClasses(), fetchAllRecords()]);
+      showNotification('success', 'Data berhasil dimuat');
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+      showNotification('error', 'Gagal memuat data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchClasses = async () => {
+    try {
+      const response = await classApi.getAll();
+      if (response.success) {
+        setClasses(response.classes || []);
+      }
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
+
+  const fetchStudents = async (classId: string) => {
+    if (!classId) return;
+    
+    try {
+      setIsLoadingStudents(true);
+      const response = await studentApi.getAll();
+      if (response.success) {
+        const classStudents = response.students.filter((s: Student) => s.classId === classId);
+        setStudents(classStudents);
+        await fetchAttendanceForDate(classId, formatDateForAPI(selectedDate));
+      }
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      showNotification('error', 'Gagal memuat data siswa');
+    } finally {
+      setIsLoadingStudents(false);
+    }
+  };
+
+  const fetchAttendanceForDate = async (classId: string, date: string) => {
+    try {
+      const response = await attendanceApi.getByClass(classId, date);
+      if (response.success) {
+        const statusMap: AttendanceStatusMap = {};
+        response.attendance.forEach((record: AttendanceRecord) => {
+          statusMap[record.studentUsername] = record.status as AttendanceStatus;
+        });
+        setAttendanceData(statusMap);
+        
+        // Calculate stats
+        const newStats = {
+          totalPresent: response.attendance.filter((r: AttendanceRecord) => r.status === 'present').length,
+          totalSick: response.attendance.filter((r: AttendanceRecord) => r.status === 'sick').length,
+          totalPermission: response.attendance.filter((r: AttendanceRecord) => r.status === 'permission').length,
+          totalAbsent: response.attendance.filter((r: AttendanceRecord) => r.status === 'absent').length
+        };
+        setStats(newStats);
+      }
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+    }
+  };
+
+  const fetchAllRecords = async () => {
+    try {
+      const response = await attendanceApi.getAll();
+      if (response.success) {
+        setAttendanceRecords(response.attendance || []);
+      }
+    } catch (error) {
+      console.error('Error fetching records:', error);
+    }
+  };
+
+  // Navigation
+  const goToPreviousDay = () => {
+    const previousDay = new Date(selectedDate);
+    previousDay.setDate(previousDay.getDate() - 1);
+    setSelectedDate(previousDay);
+    if (selectedClass) {
+      fetchAttendanceForDate(selectedClass, formatDateForAPI(previousDay));
+    }
+  };
+
+  const goToNextDay = () => {
+    const nextDay = new Date(selectedDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    setSelectedDate(nextDay);
+    if (selectedClass) {
+      fetchAttendanceForDate(selectedClass, formatDateForAPI(nextDay));
+    }
+  };
+
+  const setToday = () => {
+    const today = new Date();
+    setSelectedDate(today);
+    if (selectedClass) {
+      fetchAttendanceForDate(selectedClass, formatDateForAPI(today));
+    }
+  };
+
+  // Attendance management
+  const handleClassSelect = (classId: string) => {
+    setSelectedClass(classId);
+    setAttendanceData({});
+    fetchStudents(classId);
+  };
+
+  const handleAttendanceChange = async (studentUsername: string, status: AttendanceStatus) => {
+    setAttendanceData(prev => ({ ...prev, [studentUsername]: status }));
+    
+    // Auto-save individual attendance
+    if (selectedClass) {
+      try {
+        await attendanceApi.add(
+          selectedClass, 
+          formatDateForAPI(selectedDate), 
+          studentUsername, 
+          status
+        );
+        showNotification('success', `Presensi ${studentUsername} tersimpan`);
+      } catch (error) {
+        console.error('Error saving attendance:', error);
+        showNotification('error', 'Gagal menyimpan presensi');
+      }
+    }
+  };
+
+  const handleMarkAllPresent = () => {
+    const newData: AttendanceStatusMap = {};
+    students.forEach(student => {
+      newData[student.username] = 'present';
+    });
+    setAttendanceData(newData);
+    showNotification('success', 'Semua siswa ditandai hadir');
+  };
+
+  const handleSaveAttendance = async () => {
+    if (!selectedClass) return;
+
+    try {
+      setIsSaving(true);
+      await attendanceApi.update(
+        selectedClass,
+        formatDateForAPI(selectedDate),
+        attendanceData
+      );
+      showNotification('success', 'Presensi berhasil disimpan');
+      await fetchAllRecords(); // Refresh records
+    } catch (error) {
+      console.error('Error saving attendance:', error);
+      showNotification('error', 'Gagal menyimpan presensi');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Export functionality
+  const handleExport = () => {
+    const exportData = attendanceRecords.map(record => ({
+      Tanggal: record.date,
+      Kelas: classes.find(c => c.id === record.classId)?.name || 'Unknown',
+      Siswa: record.studentUsername,
+      Status: statusConfig[record.status as AttendanceStatus]?.label || record.status,
+      Catatan: record.notes
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data Presensi');
+    XLSX.writeFile(wb, `presensi_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    setShowExportModal(false);
+    showNotification('success', 'Data berhasil diekspor');
+  };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6 bg-gray-50/50 min-h-screen">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <LoadingSpinner size="lg" />
+            <p className="mt-4 text-gray-600">Memuat data presensi...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6 bg-gray-50/50 min-h-screen">
+      {/* Notification */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-4 right-4 z-50"
+          >
+            <div className={`flex items-center gap-3 p-4 rounded-lg shadow-lg ${
+              notification.type === 'success' 
+                ? 'bg-green-50 text-green-800 border border-green-200' 
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              {notification.type === 'success' ? (
+                <CheckCircle className="w-5 h-5" />
+              ) : (
+                <AlertTriangle className="w-5 h-5" />
+              )}
+              <span className="font-medium">{notification.message}</span>
+              <button
+                onClick={() => setNotification(null)}
+                className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Header */}
+      <AnimatedContainer variant={fadeInUp}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Presensi Siswa</h1>
+            <p className="text-gray-600 mt-2">Kelola kehadiran siswa dengan mudah dan efisien</p>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={fetchInitialData}
+              className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+            <Button 
+              onClick={() => setShowExportModal(true)}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export Data
+            </Button>
+          </div>
+        </div>
+      </AnimatedContainer>
+
+      {/* Enhanced Statistics */}
+      <AnimatedContainer variant={slideInFromLeft} delay={0.1}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Hadir</p>
+                  <p className="text-2xl font-bold text-green-600">{stats.totalPresent}</p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Sakit</p>
+                  <p className="text-2xl font-bold text-blue-600">{stats.totalSick}</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Izin</p>
+                  <p className="text-2xl font-bold text-yellow-600">{stats.totalPermission}</p>
+                </div>
+                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Alfa</p>
+                  <p className="text-2xl font-bold text-red-600">{stats.totalAbsent}</p>
+                </div>
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                  <XCircle className="w-6 h-6 text-red-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AnimatedContainer>
+
+      {/* Enhanced Tab Navigation */}
+      <AnimatedContainer variant={fadeInUp} delay={0.2}>
+        <Card className="border-0 shadow-lg">
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('daily')}
+              className={`flex-1 px-6 py-4 text-center font-medium transition-all ${
+                activeTab === 'daily'
+                  ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <UserCheck className="w-5 h-5" />
+                Presensi Harian
+              </div>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('records')}
+              className={`flex-1 px-6 py-4 text-center font-medium transition-all ${
+                activeTab === 'records'
+                  ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Riwayat Presensi
+              </div>
+            </button>
+          </div>
+
+          <CardContent className="p-6">{activeTab === 'daily' && (
+              <div className="space-y-6">
+                {/* Controls */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      Pilih Kelas
+                    </label>
+                    <select
+                      value={selectedClass}
+                      onChange={(e) => handleClassSelect(e.target.value)}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Enhanced Tab Navigation */}
+        <AnimatedContainer variant={fadeInUp} delay={0.2}>
+          <Card className="border-0 shadow-lg">
+            <div className="flex border-b border-gray-200">
+              <button
+                onClick={() => setActiveTab('daily')}
+                className={`flex-1 px-6 py-4 text-center font-medium transition-all ${
+                  activeTab === 'daily'
+                    ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <UserCheck className="w-5 h-5" />
+                  Presensi Harian
+                </div>
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('records')}
+                className={`flex-1 px-6 py-4 text-center font-medium transition-all ${
+                  activeTab === 'records'
+                    ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Riwayat Presensi
+                </div>
+              </button>
+            </div>
+
+            <CardContent className="p-6">{activeTab === 'daily' && (
+                <div className="space-y-6">
+                  {/* Controls */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Pilih Kelas
+                      </label>
+                      <select
+                        value={selectedClass}
+                        onChange={(e) => handleClassSelect(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      >
+                        <option value="">Pilih Kelas...</option>
+                        {classes.map((cls) => (
+                          <option key={cls.id} value={cls.id}>
+                            {cls.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Tanggal
+                      </label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={goToPreviousDay}
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        
+                        <div className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-900 font-medium">
+                              {formatDate(selectedDate)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={goToNextDay}
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Aksi Cepat
+                      </label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={setToday}
+                          className="flex-1"
+                        >
+                          Hari Ini
+                        </Button>
+                        
+                        <Button
+                          onClick={handleMarkAllPresent}
+                          disabled={!selectedClass || students.length === 0}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                          size="sm"
+                        >
+                          Semua Hadir
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Students List */}
+                  {selectedClass && (
+                    <Card className="border-0 shadow-lg">
+                      <CardHeader className="border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="flex items-center gap-2">
+                            <Users className="w-5 h-5 text-blue-600" />
+                            Daftar Siswa
+                          </CardTitle>
+                          <Badge variant="outline" className="text-sm">
+                            {students.length} siswa
+                          </Badge>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="p-0">
+                        {isLoadingStudents ? (
+                          <div className="p-6">
+                            <LoadingSkeleton />
+                          </div>
+                        ) : students.length === 0 ? (
+                          <div className="p-12 text-center">
+                            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                            <p className="text-lg font-medium text-gray-900">Tidak ada siswa</p>
+                            <p className="text-sm text-gray-500">Silakan pilih kelas yang memiliki siswa</p>
+                          </div>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead className="bg-gray-50/50">
+                                <tr>
+                                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">No</th>
+                                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Nama Siswa</th>
+                                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Status Kehadiran</th>
+                                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200/50">
+                                {students.map((student, index) => (
+                                  <motion.tr
+                                    key={student.id}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className="hover:bg-gray-50/50"
+                                  >
+                                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                                      {index + 1}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                                          {student.fullName.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                          <p className="text-sm font-medium text-gray-900">{student.fullName}</p>
+                                          <p className="text-xs text-gray-500">@{student.username}</p>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <div className="flex justify-center gap-2">
+                                        {(['present', 'sick', 'permission', 'absent'] as AttendanceStatus[]).map((status) => (
+                                          <Button
+                                            key={status}
+                                            variant={attendanceData[student.username] === status ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handleAttendanceChange(student.username, status)}
+                                            className={`text-xs ${
+                                              attendanceData[student.username] === status
+                                                ? `${statusConfig[status].color} text-white hover:${statusConfig[status].color}/90`
+                                                : 'hover:bg-gray-50'
+                                            }`}
+                                          >
+                                            {statusConfig[status].label}
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                      <Badge 
+                                        variant="outline"
+                                        className={`${
+                                          attendanceData[student.username] 
+                                            ? `${statusConfig[attendanceData[student.username]].bgColor} ${statusConfig[attendanceData[student.username]].textColor} border-transparent`
+                                            : 'bg-gray-100 text-gray-500'
+                                        }`}
+                                      >
+                                        {attendanceData[student.username] 
+                                          ? statusConfig[attendanceData[student.username]].label
+                                          : 'Belum'}
+                                      </Badge>
+                                    </td>
+                                  </motion.tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </CardContent>
+
+                      {selectedClass && students.length > 0 && (
+                        <div className="bg-gray-50/50 px-6 py-4 border-t">
+                          <div className="flex justify-end">
+                            <Button
+                              onClick={handleSaveAttendance}
+                              disabled={isSaving}
+                              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                            >
+                              {isSaving ? (
+                                <>
+                                  <LoadingSpinner size="sm" />
+                                  <span className="ml-2">Menyimpan...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="w-4 h-4 mr-2" />
+                                  Simpan Presensi
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'records' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-blue-600" />
+                      Riwayat Presensi
+                    </CardTitle>
+                    <Button
+                      onClick={() => setShowExportModal(true)}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Data
+                    </Button>
+                  </div>
+
+                  <Card className="border-0 shadow-lg">
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tanggal
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Kelas
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Siswa
+                              </th>
+                              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Catatan
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {attendanceRecords.slice(0, 50).map((record, index) => (
+                              <motion.tr 
+                                key={record.id} 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.02 }}
+                                className="hover:bg-gray-50"
+                              >
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {new Date(record.date).toLocaleDateString('id-ID')}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {classes.find(c => c.id === record.classId)?.name || 'Unknown'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {record.studentUsername}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                  <Badge 
+                                    variant="outline"
+                                    className={`${
+                                      statusConfig[record.status as AttendanceStatus]?.bgColor || 'bg-gray-100'
+                                    } ${
+                                      statusConfig[record.status as AttendanceStatus]?.textColor || 'text-gray-700'
+                                    } border-transparent`}
+                                  >
+                                    {statusConfig[record.status as AttendanceStatus]?.label || record.status}
+                                  </Badge>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {record.notes || '-'}
+                                </td>
+                              </motion.tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </AnimatedContainer>
+
+        {/* Enhanced Statistics */}
+        <AnimatedContainer variant={slideInFromLeft} delay={0.1}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Hadir</p>
+                    <p className="text-2xl font-bold text-green-600">{stats.totalPresent}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Sakit</p>
+                    <p className="text-2xl font-bold text-blue-600">{stats.totalSick}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Heart className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Izin</p>
+                    <p className="text-2xl font-bold text-yellow-600">{stats.totalPermission}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Alfa</p>
+                    <p className="text-2xl font-bold text-red-600">{stats.totalAbsent}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <XCircle className="w-6 h-6 text-red-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </AnimatedContainer>
+      </div>
+
+      {/* Export Modal */}
+      <AnimatePresence>
+        {showExportModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md"
+            >
+              <Card className="border-0 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Download className="w-5 h-5 text-green-600" />
+                    Export Data Presensi
+                  </CardTitle>
+                  <CardDescription>
+                    Data akan diekspor dalam format Excel (.xlsx)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowExportModal(false)}
+                      className="flex-1"
+                    >
+                      Batal
+                    </Button>
+                    <Button
+                      onClick={handleExport}
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                    >
+                      Export
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default PresensiPage; 

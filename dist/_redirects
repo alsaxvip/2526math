@@ -1,0 +1,5 @@
+# SPA Fallback for React Router
+/*    /index.html   200
+
+# API proxy (if needed in future)
+/api/*  https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec  200 

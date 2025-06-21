@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kelas Guru API Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #2563eb;
+      margin-bottom: 10px;
+    }
+    h2 {
+      color: #4b5563;
+      margin-top: 30px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 8px;
+    }
+    .card {
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    .error {
+      color: #dc2626;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    .success {
+      color: #059669;
+    }
+    pre {
+      background-color: #f3f4f6;
+      padding: 15px;
+      border-radius: 4px;
+      overflow: auto;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .api-url {
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: #fff7ed;
+      border: 1px solid #ffedd5;
+      border-radius: 4px;
+    }
+    .test-btn {
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .test-btn.secondary {
+      background-color: #6b7280;
+    }
+    .test-btn.secondary:hover {
+      background-color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kelas Guru API Test</h1>
+  <p>Gunakan halaman ini untuk menguji koneksi ke backend Google Apps Script dan fungsionalitas login.</p>
+  
+  <div class="api-url">
+    <label for="apiUrl">Google Apps Script URL:</label>
+    <input type="text" id="apiUrl" placeholder="Paste Google Apps Script URL here">
+    <div class="error" id="urlError"></div>
+  </div>
+  
+  <div class="card">
+    <h2>Test Koneksi</h2>
+    <p>Verifikasi bahwa API dapat diakses dan merespons dengan benar.</p>
+    <button id="testConnection" class="test-btn">Test Koneksi</button>
+    <div id="connectionResult"></div>
+  </div>
+  
+  <div class="card">
+    <h2>Test Login</h2>
+    <p>Uji fungsionalitas login dengan kredensial dari sheet "students".</p>
+    
+    <div class="form-group">
+      <label for="username">Username:</label>
+      <input type="text" id="username" value="guru1">
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" value="pass123">
+    </div>
+    
+    <button id="testLogin" class="test-btn">Test Login</button>
+    <button id="testInvalidLogin" class="test-btn secondary">Test Invalid Login</button>
+    <div id="loginResult"></div>
+  </div>
+  
+  <div class="card">
+    <h2>Response</h2>
+    <pre id="result">// Response akan ditampilkan di sini</pre>
+  </div>
+  
+  <script>
+    // Get DOM elements
+    const apiUrlInput = document.getElementById('apiUrl');
+    const urlError = document.getElementById('urlError');
+    const testConnectionBtn = document.getElementById('testConnection');
+    const connectionResult = document.getElementById('connectionResult');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const testLoginBtn = document.getElementById('testLogin');
+    const testInvalidLoginBtn = document.getElementById('testInvalidLogin');
+    const loginResult = document.getElementById('loginResult');
+    const resultPre = document.getElementById('result');
+    
+    // Try to get saved API URL from localStorage
+    const savedApiUrl = localStorage.getItem('kelasGuruApiUrl');
+    if (savedApiUrl) {
+      apiUrlInput.value = savedApiUrl;
+    }
+    
+    // Save API URL to localStorage when changed
+    apiUrlInput.addEventListener('change', () => {
+      localStorage.setItem('kelasGuruApiUrl', apiUrlInput.value);
+    });
+    
+    // Function to make API request
+    async function makeApiRequest(action, params = {}) {
+      const apiUrl = apiUrlInput.value.trim();
+      
+      if (!apiUrl) {
+        urlError.textContent = 'Google Apps Script URL diperlukan';
+        return null;
+      }
+      
+      urlError.textContent = '';
+      
+      try {
+        // Create form data
+        const formData = new URLSearchParams();
+        formData.append('action', action);
+        
+        // Add other parameters
+        Object.entries(params).forEach(([key, value]) => {
+          formData.append(key, String(value));
+        });
+        
+        // Make the request
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('API request error:', error);
+        return { success: false, error: error.toString() };
+      }
+    }
+    
+    // Test connection
+    testConnectionBtn.addEventListener('click', async () => {
+      connectionResult.innerHTML = '<p>Menghubungi API...</p>';
+      resultPre.textContent = '// Menunggu respons...';
+      
+      const result = await makeApiRequest('test');
+      
+      if (result) {
+        if (result.success) {
+          connectionResult.innerHTML = '<p class="success">✅ Koneksi berhasil!</p>';
+        } else {
+          connectionResult.innerHTML = `<p class="error">❌ Koneksi gagal: ${result.error || 'Unknown error'}</p>`;
+        }
+        
+        resultPre.textContent = JSON.stringify(result, null, 2);
+      }
+    });
+    
+    // Test login
+    testLoginBtn.addEventListener('click', async () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      
+      if (!username || !password) {
+        loginResult.innerHTML = '<p class="error">Username dan password diperlukan</p>';
+        return;
+      }
+      
+      loginResult.innerHTML = '<p>Mencoba login...</p>';
+      resultPre.textContent = '// Menunggu respons...';
+      
+      const result = await makeApiRequest('login', { username, password });
+      
+      if (result) {
+        if (result.success) {
+          loginResult.innerHTML = `<p class="success">✅ Login berhasil sebagai ${result.user.fullName} (${result.user.role})</p>`;
+        } else {
+          loginResult.innerHTML = `<p class="error">❌ Login gagal: ${result.error || 'Unknown error'}</p>`;
+        }
+        
+        resultPre.textContent = JSON.stringify(result, null, 2);
+      }
+    });
+    
+    // Test invalid login
+    testInvalidLoginBtn.addEventListener('click', async () => {
+      loginResult.innerHTML = '<p>Mencoba login dengan kredensial salah...</p>';
+      resultPre.textContent = '// Menunggu respons...';
+      
+      const result = await makeApiRequest('login', { username: 'wrong', password: 'wrong' });
+      
+      if (result) {
+        if (!result.success) {
+          loginResult.innerHTML = `<p class="success">✅ Login gagal seperti diharapkan: ${result.error}</p>`;
+        } else {
+          loginResult.innerHTML = '<p class="error">❌ Login berhasil padahal seharusnya gagal</p>';
+        }
+        
+        resultPre.textContent = JSON.stringify(result, null, 2);
+      }
+    });
+  </script>
+</body>
+</html> 
