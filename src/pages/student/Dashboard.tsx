@@ -342,12 +342,12 @@ const StudentDashboard = () => {
   };
   
   const getCharacterClass = (level: number, averageGrade: number) => {
-    if (level >= 10 && averageGrade >= 90) return { name: 'Archmage', icon: '🧙‍♂️', color: 'from-purple-600 to-indigo-800' };
-    if (level >= 8 && averageGrade >= 85) return { name: 'Wizard', icon: '🔮', color: 'from-blue-600 to-purple-700' };
-    if (level >= 6 && averageGrade >= 80) return { name: 'Scholar', icon: '📚', color: 'from-green-600 to-blue-600' };
-    if (level >= 4 && averageGrade >= 75) return { name: 'Apprentice', icon: '🎓', color: 'from-yellow-600 to-green-600' };
-    if (level >= 2) return { name: 'Student', icon: '📖', color: 'from-orange-600 to-yellow-600' };
-    return { name: 'Novice', icon: '🌱', color: 'from-gray-600 to-orange-600' };
+    if (level >= 10 && averageGrade >= 90) return { name: 'Addicted', icon: '🧙‍♂️', color: 'from-purple-600 to-indigo-800' };
+    if (level >= 8 && averageGrade >= 85) return { name: 'Fanatic', icon: '🔮', color: 'from-blue-600 to-purple-700' };
+    if (level >= 6 && averageGrade >= 80) return { name: 'Connoisseur', icon: '📚', color: 'from-green-600 to-blue-600' };
+    if (level >= 4 && averageGrade >= 75) return { name: 'Enthusiast', icon: '🎓', color: 'from-yellow-600 to-green-600' };
+    if (level >= 2) return { name: 'Trainee', icon: '📖', color: 'from-orange-600 to-yellow-600' };
+    return { name: 'Muggle', icon: '🌱', color: 'from-gray-600 to-orange-600' };
   };
 
   const getRPGStats = (): RPGStats => {
