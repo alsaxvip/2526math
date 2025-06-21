@@ -192,7 +192,7 @@ const Login = () => {
                 <GraduationCap className="w-10 h-10 text-white" />
               </div>
               <CardTitle className="text-2xl font-bold text-gray-900">
-                Kelas Guru
+                Kelas Matematika
               </CardTitle>
               <CardDescription className="text-base text-gray-600">
                 {activeTab === 'teacher' 
