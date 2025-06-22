@@ -610,7 +610,7 @@ const StudentDashboard = () => {
             {/* Real Attendance */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-slate-300">Tingkat Kehadiran</span>
+                <span className="text-sm font-medium text-slate-300">Login</span>
                 <span className="text-sm font-bold text-green-400">{stats.attendance}%</span>
               </div>
               <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
@@ -622,14 +622,14 @@ const StudentDashboard = () => {
               <p className="text-xs text-slate-400 mt-1">
                 {stats.attendance >= 80 ? 'Rajin banget! Mantap 👏' : 
                  stats.attendance > 0 ? 'Yuk lebih rajin hadir! 📚' : 
-                 'Data kehadiran lagi di-sync...⏳'}
+                 'Data Login lagi di-sync...⏳'}
               </p>
             </div>
             
             {/* Real Grade Average */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-slate-300">Rata-rata Nilai</span>
+                <span className="text-sm font-medium text-slate-300">Battle Point</span>
                 <span className="text-sm font-bold text-blue-400">{stats.averageGrade}</span>
               </div>
               <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
@@ -641,14 +641,14 @@ const StudentDashboard = () => {
               <p className="text-xs text-slate-400 mt-1">
                 {stats.averageGrade >= 80 ? 'Prestasi keren! 🌟' : 
                  stats.averageGrade > 0 ? 'Semangat belajar terus! 📖' : 
-                 'Data nilai lagi di-sync...⏳'}
+                 'Data BP lagi di-sync...⏳'}
               </p>
             </div>
             
             {/* Real Assignments Completed */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-slate-300">Tugas Selesai</span>
+                <span className="text-sm font-medium text-slate-300">Mission Accomplished</span>
                 <span className="text-sm font-bold text-purple-400">{stats.completedAssignments}</span>
               </div>
               <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
@@ -660,7 +660,7 @@ const StudentDashboard = () => {
               <p className="text-xs text-slate-400 mt-1">
                 {stats.completedAssignments >= 10 ? 'Produktif banget! 🔥' : 
                  stats.completedAssignments > 0 ? 'Ada quest lain menunggu! 💪' : 
-                 'Data tugas lagi di-sync...⏳'}
+                 'Data Mission lagi di-sync...⏳'}
               </p>
             </div>
           </div>
