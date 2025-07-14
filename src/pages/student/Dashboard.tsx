@@ -342,12 +342,12 @@ const StudentDashboard = () => {
   };
   
   const getCharacterClass = (level: number, averageGrade: number) => {
-    if (level >= 10 && averageGrade >= 90) return { name: 'Addicted', icon: '🧙‍♂️', color: 'from-purple-600 to-indigo-800' };
-    if (level >= 8 && averageGrade >= 85) return { name: 'Fanatic', icon: '🔮', color: 'from-blue-600 to-purple-700' };
-    if (level >= 6 && averageGrade >= 80) return { name: 'Connoisseur', icon: '📚', color: 'from-green-600 to-blue-600' };
-    if (level >= 4 && averageGrade >= 75) return { name: 'Enthusiast', icon: '🎓', color: 'from-yellow-600 to-green-600' };
-    if (level >= 2) return { name: 'Trainee', icon: '📖', color: 'from-orange-600 to-yellow-600' };
-    return { name: 'Muggle', icon: '🌱', color: 'from-gray-600 to-orange-600' };
+    if (level >= 10 && averageGrade >= 90) return { name: 'Math Archmage', icon: '🧙‍♂️', color: 'from-purple-600 to-indigo-800' };
+    if (level >= 8 && averageGrade >= 85) return { name: 'Math Paladin', icon: '💂🏻‍♂️', color: 'from-blue-600 to-purple-700' };
+    if (level >= 6 && averageGrade >= 80) return { name: 'Math Knight', icon: '⚔️', color: 'from-green-600 to-blue-600' };
+    if (level >= 4 && averageGrade >= 75) return { name: 'Math Explorer', icon: '🔍', color: 'from-yellow-600 to-green-600' };
+    if (level >= 2) return { name: 'Math Apprentice', icon: '📖', color: 'from-orange-600 to-yellow-600' };
+    return { name: 'Newbie', icon: '🌱', color: 'from-gray-600 to-orange-600' };
   };
 
   const getRPGStats = (): RPGStats => {
@@ -448,9 +448,13 @@ const StudentDashboard = () => {
                     </span>
                   </div>
                   <p className="text-purple-200">
-                    {stats.points > 500 ? "Legend banget! Quest master sejati 🏆" : 
-                     stats.points > 200 ? "Keren nih, adventurer yang promising! ⚡" :
-                     "Newbie yang semangat, gas terus! 🌟"}
+                    {stats.points >= 21000 ? "Math Addicted sejati 🏆" 
+                     stats.points >= 15000 ? "Math Fanatic nih, Bos 🌟 "
+                     stats.points >= 10000 ? "cie udah di level Math Connoisseur 🏋🏻‍♂️"
+                     stats.points >= 6000 ? "Math Collector mulai beraksi 👨🏻‍🔬"
+                     stats.points >= 3000 ? "woowww Math Enthusiast 👨🏻‍💻"
+                     stats.points >= 1000 ? "Keren nih, sudah memasuki masa Trainee! 🕵🏻‍♂️" :
+                     "Muggle yang semangat, gas terus! 🌟"}
                   </p>
                 </div>
               </div>
