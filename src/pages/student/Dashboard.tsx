@@ -448,13 +448,9 @@ const StudentDashboard = () => {
                     </span>
                   </div>
                   <p className="text-purple-200">
-                    {stats.points >= 21000 ? "Math Addicted sejati 🏆" 
-                     stats.points >= 15000 ? "Math Fanatic nih, Bos 🌟 "
-                     stats.points >= 10000 ? "cie udah di level Math Connoisseur 🏋🏻‍♂️"
-                     stats.points >= 6000 ? "Math Collector mulai beraksi 👨🏻‍🔬"
-                     stats.points >= 3000 ? "woowww Math Enthusiast 👨🏻‍💻"
-                     stats.points >= 1000 ? "Keren nih, sudah memasuki masa Trainee! 🕵🏻‍♂️" :
-                     "Muggle yang semangat, gas terus! 🌟"}
+                    {stats.points > 500 ? "Legend banget! Quest master sejati 🏆" : 
+                     stats.points > 200 ? "Keren nih, adventurer yang promising! ⚡" :
+                     "Pemula yang semangat, gas terus! 🌟"}
                   </p>
                 </div>
               </div>
