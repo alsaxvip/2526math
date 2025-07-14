@@ -8,7 +8,7 @@
 // Current URLs sudah expired, perlu deploy ulang setelah fix backend
 // Lihat README.md untuk panduan cara men-deploy Google Apps Script
 // ⚠️  UPDATE URL INI SETELAH DEPLOY ULANG SCRIPT YANG SUDAH DIPERBAIKI ⚠️
-const API_URL = 'https://script.google.com/macros/s/AKfycbySZL2MOwlhXi1I4gr1sT1KVMc6pD1WoTYynVp9bzTSBvOFZlBfPV8ZzqS-_qT1zZ5J4g';
+const API_URL = 'https://script.google.com/macros/s/AKfycbySZL2MOwlhXi1I4gr1sT1KVMc6pD1WoTYynVp9bzTSBvOFZlBfPV8ZzqS-_qT1zZ5J4g/exec';
 
 // Session credentials - persistent across page refresh
 let sessionCredentials = {
