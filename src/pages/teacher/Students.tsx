@@ -694,7 +694,7 @@ const StudentsPage = () => {
                           <h3 className="text-sm font-semibold text-gray-900 truncate">{student.fullName}</h3>
                           <p className="text-xs text-gray-500 flex items-center">
                             <Mail className="w-3 h-3 mr-1 flex-shrink-0" />
-                            <span className="truncate">{student.password}</span>
+                            <span className="truncate">{student.username}</span>
                           </p>
                           {/* Debug info for problematic usernames */}
                           {(!student.username || student.username === 'undefined' || student.username === '') && (
