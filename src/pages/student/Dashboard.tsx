@@ -778,28 +778,7 @@ const StudentDashboard = () => {
               <Compass className={`w-6 h-6 mx-auto mb-1 ${refreshing ? 'animate-spin' : ''}`} />
               <span className="text-sm">{refreshing ? 'Refreshing...' : 'Refresh Stats'}</span>
             </div>
-          </Button>
-          
-          <Button className="h-16 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium border border-green-500/50">
-            <div className="text-center">
-              <Map className="w-6 h-6 mx-auto mb-1" />
-              <span className="text-sm">Peta Progress</span>
-            </div>
-          </Button>
-          
-          <Button className="h-16 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium border border-purple-500/50">
-            <div className="text-center">
-              <Users className="w-6 h-6 mx-auto mb-1" />
-              <span className="text-sm">Teman Kelas</span>
-            </div>
-          </Button>
-          
-          <Button className="h-16 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-medium border border-orange-500/50">
-            <div className="text-center">
-              <Star className="w-6 h-6 mx-auto mb-1" />
-              <span className="text-sm">Achievement</span>
-            </div>
-          </Button>
+          </Button>                 
         </div>
       </div>
     </div>
