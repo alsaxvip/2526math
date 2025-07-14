@@ -769,12 +769,28 @@ const StudentDashboard = () => {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Button className="h-16 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium border border-blue-500/50">
+          <Button 
+            className="h-16 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium border border-blue-500/50"
             onClick={handleRefresh}
             disabled={refreshing}
+          >
             <div className="text-center">
               <Compass className={`w-6 h-6 mx-auto mb-1 ${refreshing ? 'animate-spin' : ''}`} />
               <span className="text-sm">{refreshing ? 'Refreshing...' : 'Refresh Stats'}</span>
+            </div>
+          </Button>
+          
+          <Button className="h-16 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium border border-green-500/50">
+            <div className="text-center">
+              <Map className="w-6 h-6 mx-auto mb-1" />
+              <span className="text-sm">Peta Progress</span>
+            </div>
+          </Button>
+          
+          <Button className="h-16 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium border border-purple-500/50">
+            <div className="text-center">
+              <Users className="w-6 h-6 mx-auto mb-1" />
+              <span className="text-sm">Teman Kelas</span>
             </div>
           </Button>
           
