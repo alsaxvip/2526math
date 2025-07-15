@@ -345,9 +345,10 @@ const StudentDashboard = () => {
     if (level >= 20 && averageGrade >= 95) return { name: 'Math Archmage', icon: '🧙‍♂️', color: 'from-purple-600 to-indigo-800' };
     if (level >= 15 && averageGrade >= 90) return { name: 'Math Paladin', icon: '💂🏻‍♂️', color: 'from-blue-600 to-purple-700' };
     if (level >= 10 && averageGrade >= 85) return { name: 'Math Knight', icon: '⚔️', color: 'from-green-600 to-blue-600' };
-    if (level >= 5 && averageGrade >= 80) return { name: 'Math Apprentice', icon: '📚', color: 'from-yellow-600 to-green-600' };
-    if (level >= 2) return { name: 'Trainee', icon: '📗', color: 'from-orange-600 to-yellow-600' };
-    return { name: 'Muggle', icon: '🌱', color: 'from-gray-600 to-orange-600' };
+    if (level >= 6 && averageGrade >= 80) return { name: 'Math Apprentice', icon: '📖', color: 'from-yellow-600 to-green-600' };
+    if (level >= 3 && averageGrade >= 80) return { name: 'Math Initiate', icon: '📚', color: 'from-orange-600 to-yellow-600' };
+    if (level >= 2) return { name: 'Trainee', icon: '📗', color: 'from-red-600 to-orange-600' };
+    return { name: 'Muggle', icon: '🌱', color: 'from-gray-600 to-red-600' };
   };
 
   const getRPGStats = (): RPGStats => {
