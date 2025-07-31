@@ -518,7 +518,65 @@ const StudentDashboard = () => {
                 {Math.round((rpgStats.exp / rpgStats.expToNext) * 100)}% selesai
               </div>
             </div>
-          </div>          
+          </div>
+
+          {/* Guild Rankings (Leaderboard) */}
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-yellow-400" />
+              Hall of Fame 🏰
+            </h2>
+            
+            {leaderboard.length > 0 ? (
+              <div className="space-y-3">
+                {leaderboard.slice(0, 8).map((student, index) => (
+                  <div 
+                    key={student.username}
+                    className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:scale-102 ${
+                      student.username === userInfo?.username 
+                        ? 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-400/50' 
+                        : 'bg-slate-700/30 hover:bg-slate-700/50'
+                    }`}
+                  >
+                    <div className="text-2xl min-w-[2rem] text-center">
+                      {index === 0 && '👑'}
+                      {index === 1 && '🥈'}
+                      {index === 2 && '🥉'}
+                      {index > 2 && `#${index + 1}`}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium truncate ${
+                        student.username === userInfo?.username ? 'text-white' : 'text-slate-300'
+                      }`}>
+                        {student.fullName}
+                        {student.username === userInfo?.username && ' (Kamu)'}
+                      </p>
+                      <p className="text-xs text-slate-400">{student.points.toLocaleString()} XP • Lv.{student.level}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-yellow-400">
+                      <Award className="w-4 h-4" />
+                      <span className="text-sm font-bold">{student.badges}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Castle className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+                <p className="text-slate-400">Hall of Fame lagi kosong nih...</p>
+              </div>
+            )}
+            
+            <Button 
+              variant="outline" 
+              className="w-full mt-4 border-purple-500/50 text-purple-300 hover:bg-purple-600/20 hover:text-white"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <Compass className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing...' : 'Refresh Data 🔄'}
+            </Button>
+          </div>
         </div>
 
         {/* Real Progress Overview */}
@@ -691,64 +749,6 @@ const StudentDashboard = () => {
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Guild Rankings (Leaderboard) */}
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-yellow-400" />
-              Hall of Fame 🏰
-            </h2>
-            
-            {leaderboard.length > 0 ? (
-              <div className="space-y-3">
-                {leaderboard.slice(0, 8).map((student, index) => (
-                  <div 
-                    key={student.username}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:scale-102 ${
-                      student.username === userInfo?.username 
-                        ? 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-400/50' 
-                        : 'bg-slate-700/30 hover:bg-slate-700/50'
-                    }`}
-                  >
-                    <div className="text-2xl min-w-[2rem] text-center">
-                      {index === 0 && '👑'}
-                      {index === 1 && '🥈'}
-                      {index === 2 && '🥉'}
-                      {index > 2 && `#${index + 1}`}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-medium truncate ${
-                        student.username === userInfo?.username ? 'text-white' : 'text-slate-300'
-                      }`}>
-                        {student.fullName}
-                        {student.username === userInfo?.username && ' (Kamu)'}
-                      </p>
-                      <p className="text-xs text-slate-400">{student.points.toLocaleString()} XP • Lv.{student.level}</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-yellow-400">
-                      <Award className="w-4 h-4" />
-                      <span className="text-sm font-bold">{student.badges}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Castle className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-                <p className="text-slate-400">Hall of Fame lagi kosong nih...</p>
-              </div>
-            )}
-            
-            <Button 
-              variant="outline" 
-              className="w-full mt-4 border-purple-500/50 text-purple-300 hover:bg-purple-600/20 hover:text-white"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
-              <Compass className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh Data 🔄'}
-            </Button>
           </div>
         )}
 
