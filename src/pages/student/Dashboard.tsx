@@ -484,23 +484,6 @@ const StudentDashboard = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* XP Points */}
-              <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <Crown className="w-8 h-8 text-yellow-400" />
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Total Experience</h3>
-                    <p className="text-yellow-300 text-sm">XP yang udah dikumpulin</p>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-yellow-400 mb-2">
-                    {stats.points.toLocaleString()}
-                  </div>
-                  <div className="text-sm text-yellow-300">Poin XP</div>
-                </div>
-              </div>
-
               {/* Current Level */}
               <div className={`bg-gradient-to-br ${characterClass.color}/20 border border-purple-500/30 rounded-xl p-6`}>
                 <div className="flex items-center gap-3 mb-4">
