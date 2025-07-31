@@ -751,20 +751,6 @@ const StudentDashboard = () => {
               {refreshing ? 'Refreshing...' : 'Refresh Data 🔄'}
             </Button>
           </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Button 
-            className="h-16 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium border border-blue-500/50"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <div className="text-center">
-              <Compass className={`w-6 h-6 mx-auto mb-1 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="text-sm">{refreshing ? 'Refreshing...' : 'Refresh Stats'}</span>
-            </div>
-          </Button>                 
-        </div>
       </div>
     </div>
   );
