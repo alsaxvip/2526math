@@ -467,7 +467,7 @@ const StudentDashboard = () => {
                 <div className="text-center bg-white/10 rounded-xl p-4 backdrop-blur-sm">
                   <Award className="w-6 h-6 mx-auto mb-1 text-orange-400" />
                   <div className="text-2xl font-bold">{stats.badges.length}</div>
-                  <div className="text-xs text-purple-300">Trofi</div>
+                  <div className="text-xs text-purple-300">Badges</div>
                 </div>
               </div>
             </div>
@@ -656,7 +656,7 @@ const StudentDashboard = () => {
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <Award className="w-6 h-6 text-yellow-400" />
-              Koleksi Trofi 🏆
+              Koleksi Badges 🏆
               <span className="ml-auto text-sm bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full border border-yellow-500/30">
                 {stats.badges.length} Badge{stats.badges.length !== 1 ? 's' : ''}
               </span>
@@ -720,7 +720,7 @@ const StudentDashboard = () => {
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <Award className="w-6 h-6 text-yellow-400" />
-              Koleksi Trofi 🏆
+              Koleksi Badges 🏆
               <span className="ml-auto text-sm bg-slate-600/50 text-slate-400 px-3 py-1 rounded-full border border-slate-500/30">
                 0 Badge
               </span>
@@ -731,7 +731,7 @@ const StudentDashboard = () => {
                 <Award className="w-12 h-12 text-slate-400" />
               </div>
               <p className="text-slate-400 text-lg font-medium mb-2">Belum ada badge nih</p>
-              <p className="text-slate-500 text-sm mb-6">Yuk selesaikan achievement untuk dapetin trofi pertama! ⭐</p>
+              <p className="text-slate-500 text-sm mb-6">Yuk selesaikan achievement untuk dapetin badge pertama! ⭐</p>
               
               {availableBadges.length > 0 && (
                 <div>
