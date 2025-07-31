@@ -480,7 +480,7 @@ const StudentDashboard = () => {
           <div className="lg:col-span-2 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <Star className="w-6 h-6 text-yellow-400" />
-              Progress & Achievement
+              Progress
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
