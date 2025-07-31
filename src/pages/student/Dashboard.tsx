@@ -546,7 +546,7 @@ const StudentDashboard = () => {
             
             {leaderboard.length > 0 ? (
               <div className="space-y-3">
-                {leaderboard.slice(0, 10).map((student, index) => (
+                {leaderboard.slice(0, 8).map((student, index) => (
                   <div 
                     key={student.username}
                     className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:scale-102 ${
