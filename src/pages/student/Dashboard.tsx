@@ -517,8 +517,22 @@ const StudentDashboard = () => {
               <div className="text-xs text-slate-400 mt-1 text-center">
                 {Math.round((rpgStats.exp / rpgStats.expToNext) * 100)}% selesai
               </div>
-            </div>
+            </div>            
+          </div>          
+        </div>
 
+        {/* Real Progress Overview */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-blue-400" />
+            Progress Akademik 📊
+            {refreshing && (
+              <span className="ml-auto text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full animate-pulse">
+                Syncing...
+              </span>
+            )}
+          </h2>
+                            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Real Grade Average */}
             <div>
@@ -557,7 +571,7 @@ const StudentDashboard = () => {
                  'Data Mission lagi di-sync...⏳'}
               </p>
             </div>
-          </div>          
+          </div>
         </div>
         
         {/* Trophy Collection */}
