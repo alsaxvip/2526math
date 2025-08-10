@@ -534,25 +534,6 @@ const StudentDashboard = () => {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Real Attendance */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-slate-300">Login</span>
-                <span className="text-sm font-bold text-green-400">{stats.attendance}%</span>
-              </div>
-              <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
-                  style={{ width: `${stats.attendance}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">
-                {stats.attendance >= 80 ? 'Rajin banget! Mantap 👏' : 
-                 stats.attendance > 0 ? 'Yuk lebih rajin hadir! 📚' : 
-                 'Data Login lagi di-sync...⏳'}
-              </p>
-            </div>
-            
             {/* Real Grade Average */}
             <div>
               <div className="flex justify-between items-center mb-2">
