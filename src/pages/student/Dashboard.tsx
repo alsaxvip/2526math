@@ -559,22 +559,6 @@ const StudentDashboard = () => {
             </div>
           </div>          
         </div>
-
-        {/* Real Progress Overview */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-blue-400" />
-            Progress Akademik 📊
-            {refreshing && (
-              <span className="ml-auto text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full animate-pulse">
-                Syncing...
-              </span>
-            )}
-          </h2>
-          
-          
-          </div>
-        </div>
         
         {/* Trophy Collection */}
         {stats.badges.length > 0 ? (
