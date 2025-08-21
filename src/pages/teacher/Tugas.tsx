@@ -1397,4 +1397,4 @@ const TugasPage = () => {
   );
 };
 
-export default TugasPage; 
+export default TugasPage;
