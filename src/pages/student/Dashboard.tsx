@@ -345,9 +345,10 @@ const StudentDashboard = () => {
     if (level >= 20) return { name: 'Math Archmage', icon: '🧙‍♂️', color: 'from-purple-600 to-indigo-800' };
     if (level >= 15) return { name: 'Math Paladin', icon: '💂🏻‍♂️', color: 'from-blue-600 to-purple-700' };
     if (level >= 10) return { name: 'Math Knight', icon: '⚔️', color: 'from-green-600 to-blue-600' };
-    if (level >= 6) return { name: 'Math Apprentice', icon: '📖', color: 'from-yellow-600 to-green-600' };
+    if (level >= 5) return { name: 'Math Enthusiast', icon: '🔢', color: 'from-green-600 to-blue-600' };
+    if (level >= 4) return { name: 'Math Apprentice', icon: '📖', color: 'from-yellow-600 to-green-600' };
     if (level >= 3) return { name: 'Math Initiate', icon: '📚', color: 'from-orange-600 to-yellow-600' };
-    if (level >= 2) return { name: 'Trainee', icon: '📗', color: 'from-red-600 to-orange-600' };
+    if (level >= 2) return { name: 'Math Trainee', icon: '📗', color: 'from-red-600 to-orange-600' };
     return { name: 'Muggle', icon: '🌱', color: 'from-gray-600 to-red-600' };
   };
 
@@ -449,9 +450,9 @@ const StudentDashboard = () => {
                     </span>
                   </div>
                   <p className="text-purple-200">
-                    {stats.points > 15000 ? "Math master sejati 🏆" :
-                     stats.points > 10000 ? "Wuih terus berkelana nih ⚔️" :
-                     stats.points > 5000 ? "Keren nih, petualangan dimulai! ⚡" :
+                    {stats.points > 10000 ? "Math master sejati 🏆" :
+                     stats.points > 5000 ? "Wuih terus berkelana nih ⚔️" :
+                     stats.points > 1000 ? "Keren nih, petualangan dimulai! ⚡" :
                      "Muggle yang semangat, gas terus! 🌟"}
                   </p>
                 </div>
